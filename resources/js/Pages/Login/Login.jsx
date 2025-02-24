@@ -66,23 +66,53 @@ const Login = () => {
         setGeneralError('');
 
         try {
-            // กำหนด headers สำหรับ request
             const headers = {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
             };
 
-            // ส่ง request ไปยัง server
+            console.log('Sending request with headers:', headers);
+            console.log('Sending data:', formData);
+
             const response = await axios.post('/api/login', formData, { headers });
 
-            // ตรวจสอบการตอบกลับจาก server
-            if (response.data?.token) {
-                // จัดเก็บ token และ redirect
-                localStorage.setItem('token', response.data.token);
-                router.visit('/menu');
-            } else {
-                throw new Error('ไม่พบ token ในการตอบกลับ');
+            console.log('Full response:', response);
+
+            // ตรวจสอบประเภทข้อมูลที่ได้รับ
+            let responseData = response.data;
+            console.log('Response data type:', typeof responseData);
+            console.log('Response data:', responseData);
+
+            // หากได้รับข้อมูลเป็น string ให้พยายามแยก JSON ออกมา
+            if (typeof responseData === 'string') {
+                try {
+                    // หาตำแหน่งเริ่มต้นของ JSON (ตำแหน่งของเครื่องหมาย '{')
+                    const jsonStartIndex = responseData.indexOf('{');
+                    if (jsonStartIndex !== -1) {
+                        // แยกเฉพาะส่วนที่เป็น JSON
+                        const jsonString = responseData.substring(jsonStartIndex);
+                        responseData = JSON.parse(jsonString);
+                        console.log('Parsed JSON data:', responseData);
+                    }
+                } catch (parseError) {
+                    console.error('Error parsing JSON from string:', parseError);
+                    throw new Error('รูปแบบข้อมูลไม่ถูกต้อง');
+                }
+            }
+
+            if (responseData && responseData.token) {
+                localStorage.setItem('token', responseData.token);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${responseData.token}`;
+
+                if (responseData.user) {
+                    localStorage.setItem('user', JSON.stringify(responseData.user));
+
+                    // ส่ง user_id ไปกับ URL
+                    window.location.href = `/menu?user_id=${responseData.user.id}`;
+                } else {
+                    window.location.href = '/menu';
+                }
             }
         } catch (error) {
             console.error('Login error:', error);
@@ -105,7 +135,7 @@ const Login = () => {
                 setGeneralError('ไม่สามารถเชื่อมต่ออินเทอร์เน็ตได้ กรุณาตรวจสอบการเชื่อมต่อของคุณ');
             } else {
                 // Unknown error
-                setGeneralError('เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง');
+                setGeneralError(error.message || 'เกิดข้อผิดพลาดที่ไม่คาดคิด กรุณาลองใหม่อีกครั้ง');
             }
         } finally {
             setIsLoading(false);
@@ -115,7 +145,7 @@ const Login = () => {
     return (
         <>
             <Nav />
-            <div style={{backgroundImage: `url(${bg})`}} className="w-full min-h-screen bg-cover bg-center bg-blend-multiply bg-gray-300 flex items-center justify-center p-4">
+            <div style={{ backgroundImage: `url(${bg})` }} className="w-full min-h-screen bg-cover bg-center bg-blend-multiply bg-gray-300 flex items-center justify-center p-4">
                 <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
                     <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                         ยินดีต้อนรับกลับ

@@ -12,6 +12,7 @@ use App\Models\UserFoodLogs;
 use App\Models\User;
 use App\Models\DailySummary;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class FoodController extends Controller
 {
@@ -20,6 +21,7 @@ class FoodController extends Controller
      */
     public function index(Request $request)
     {
+        Log::info('User authenticated: ', ['user' => Auth::user()]);
         // ดึงข้อมูลอาหารพร้อมความสัมพันธ์กับ category
         $users = db::table('users')->get();
         $foods = DB::table('foods')
@@ -27,6 +29,7 @@ class FoodController extends Controller
         $catagorry = DB::table('catagory')->get();
 
         $categories = Catagory::all();
+        $user = Auth::user();
 
         // ดึงข้อมูล categories ทั้งหมด
         $categories = Catagory::all();
@@ -35,10 +38,11 @@ class FoodController extends Controller
         return Inertia::render('Menu/Index', [
             'menuItems' => DB::table('foods')->get(), // เปลี่ยนจาก food เป็น foods
             'categories' => DB::table('catagory')->get(), // ตามโครงสร้าง DB ของคุณ
-            'users' => DB::table('users')->get(),
+            'users' => $user,
+            'isAuthenticated' => Auth::check(),
             'auth' => [
-                'user' => $request->user()
-            ]
+                'user' => Auth::user(),
+            ],
         ]);
     }
 

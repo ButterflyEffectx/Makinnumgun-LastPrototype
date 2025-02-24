@@ -11,14 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('daily_summaries', function (Blueprint $table) {
+        Schema::create('daily_summary', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->date('date');
-            $table->integer('total_calories_consumed');
-            $table->integer('goal_calories');
-            $table->integer('calories_difference');
+            $table->integer('total_calories')->default(0);
+            $table->integer('calories_diff')->default(0);
             $table->timestamps();
+
+            // เพิ่ม unique constraint เพื่อป้องกันข้อมูลซ้ำของผู้ใช้ในวันเดียวกัน
+            $table->unique(['user_id', 'date']);
         });
     }
 
@@ -27,6 +29,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('daily_summaries');
+        Schema::dropIfExists('daily_summary');
     }
 };
+

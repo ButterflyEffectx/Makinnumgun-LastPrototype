@@ -3,23 +3,30 @@ import { Head, usePage, router } from "@inertiajs/react";
 import { MagnifyingGlassIcon, UserIcon, ChevronDownIcon } from "@heroicons/react/24/solid";
 
 // Nav Component แบบ Nested Component
-const Nav = ({ users }) => {
+const Nav = () => {
+    const { auth } = usePage().props;
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [showDropdown, setShowDropdown] = useState(false);
     const [userData, setUserData] = useState(null);
 
     useEffect(() => {
-        // ตรวจสอบ token ใน localStorage
-        const token = localStorage.getItem('token');
-        if (token) {
-            // สมมติว่าเราเก็บข้อมูล user ใน localStorage ด้วย
-            const user = JSON.parse(localStorage.getItem('user'));
+        // ถ้ามีข้อมูล auth.user จาก props ให้ใช้ข้อมูลนั้นเลย
+        if (auth && auth.user) {
             setIsLoggedIn(true);
-            setUserData(user);
+            setUserData(auth.user);
+        } else {
+            // fallback ไปใช้ localStorage ถ้าไม่มี auth.user
+            const token = localStorage.getItem('token');
+            if (token) {
+                const user = JSON.parse(localStorage.getItem('user'));
+                setIsLoggedIn(true);
+                setUserData(user);
+            }
         }
-    }, []);
+    }, [auth]);
 
     const handleLogout = () => {
+        // ล้างข้อมูลใน localStorage
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         setIsLoggedIn(false);
@@ -106,12 +113,19 @@ const Nav = ({ users }) => {
 
 // Index Component หลัก
 const Index = ({ menuItems, categories, activeCategory = 'ทั้งหมด', users }) => {
-    const { auth } = usePage().props;  // Add this line to get auth data
+    const user = usePage().props.auth.user;
+    console.log(user);
+    console.log(`'Auth user' ${users}`);
+    const { auth } = usePage().props;
+    console.log('Auth data:', auth);
+    console.log('User data:', users);
     const [searchQuery, setSearchQuery] = useState('');
     const [moreInfo, setMoreInfo] = useState({});
     const [cart, setCart] = useState({});
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+
+
 
     const toggleInfo = (id) => {
         setMoreInfo((prev) => ({
@@ -153,44 +167,34 @@ const Index = ({ menuItems, categories, activeCategory = 'ทั้งหมด'
         }));
     };
 
+    const getUserIdFromLocalStorage = () => {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+            const user = JSON.parse(userStr);
+            return user.id; // หรือ user.user_id ขึ้นอยู่กับโครงสร้างข้อมูล
+        }
+        return null;
+    }
+
     const handleSave = () => {
-        if (!auth.user) {
+        const userId = getUserIdFromLocalStorage();
+        if (!userId) {
             alert('กรุณาเข้าสู่ระบบก่อนบันทึกรายการอาหาร');
             return;
         }
 
-        if (Object.keys(cart).length === 0) {
-            alert('กรุณาเพิ่มรายการอาหารก่อนบันทึก');
-            return;
-        }
-
-        setIsSaving(true);
-
+        // สร้างข้อมูลสำหรับส่งไปยัง API
         const foodLogs = Object.values(cart).map(item => ({
+            user_id: userId,  // เพิ่ม user_id ลงไปในข้อมูลที่ส่ง
             food_id: item.id,
-            catagory_id: item.catagory_id,
-            servings: item.quantity,
-            total_calories: item.calories * item.quantity
+            date: new Date().toISOString().split('T')[0],
         }));
 
+        // ส่งข้อมูลไปยัง API
         router.post('/food/store', {
             foods: foodLogs
-        }, {
-            preserveScroll: true,
-            onSuccess: (response) => {
-                setCart({});
-                setIsCartOpen(false);
-                alert('บันทึกรายการอาหารเรียบร้อยแล้ว');
-            },
-            onError: (errors) => {
-                console.error('Save errors:', errors);
-                alert(errors.message || 'เกิดข้อผิดพลาดในการบันทึกรายการอาหาร');
-            },
-            onFinish: () => {
-                setIsSaving(false);
-            }
-        });
-    };
+        }, { /* options */ });
+    }
 
     // กรองรายการอาหารตามคำค้นหา
     const filteredMenuItems = menuItems.filter(item =>
@@ -269,7 +273,7 @@ const Index = ({ menuItems, categories, activeCategory = 'ทั้งหมด'
 
     return (
         <>
-            <Nav users={users} />
+            <Nav />
             <div className="min-h-screen bg-gray-900 p-6">
                 <div className="container mx-auto px-12">
                     <div className="mb-6">
