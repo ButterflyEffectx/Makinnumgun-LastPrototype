@@ -14,11 +14,7 @@ return new class extends Migration
         Schema::create('foods', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-<<<<<<< HEAD
             $table->foreignId('catagory_id')->constrained('catagory');
-=======
-            $table->string('catagory_id')->constrained('catagory');
->>>>>>> 94f94ec (comfirm commit)
             $table->integer('calories');
             $table->decimal('protein', 5, 2);
             $table->decimal('carbs', 5, 2);
