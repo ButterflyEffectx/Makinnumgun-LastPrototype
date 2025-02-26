@@ -34,7 +34,6 @@ Route::post('/menu', [FoodController::class, 'store'])
     ->name('menu.store')
     ->middleware('auth:sanctum');
 
-// หน้า Dashboard
 Route::get('/dashboard', [DailySummaryController::class, 'index'])
     ->name('dashboard');
 

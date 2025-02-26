@@ -115,7 +115,7 @@ const Login = () => {
     return (
         <>
             <Nav />
-            <div className="min-h-screen bg-gradient-to-b from-orange-50 to-white flex items-center justify-center p-4">
+            <div style={{backgroundImage: `url(${imagesLogin})`}} className="min-h-screen bg-blend-multiply bg-gray-400 bg-cover bg-center flex items-center justify-center p-4">
                 <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-8">
                     <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
                         ยินดีต้อนรับกลับ

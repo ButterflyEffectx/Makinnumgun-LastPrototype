@@ -73,7 +73,6 @@ const CardContent = React.forwardRef(({ className = '', ...props }, ref) => (
     <div ref={ref} className={`p-4 sm:p-6 pt-0 ${className}`} {...props} />
 ));
 
-// User Analytics Component
 const UserAnalytics = ({ users, totalUsers, totalFoods, avgCalories  }) => {
     const [timeframe, setTimeframe] = useState('7days');
 
@@ -140,7 +139,7 @@ const UserAnalytics = ({ users, totalUsers, totalFoods, avgCalories  }) => {
         },
         {
             title: 'THE BEST PICK',
-            value: '$45,300',
+            value: 'General food',
             percentage: '+21%',
             description: 'From previous period',
             color: 'bg-green-500',
@@ -242,9 +241,7 @@ const Management = ({ Foods, catagorys, currentPage, lastPage, users, totalUsers
 
     return (
         <>
-            {/* Header */}
             <Nav/>
-
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <UserAnalytics users={users}
                 totalUsers={totalUsers}

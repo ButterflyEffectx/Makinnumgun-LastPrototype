@@ -137,7 +137,6 @@ const Dashboard = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
                     {/* Goal Calories Card */}
                     <Card className="overflow-hidden border-none shadow-lg">
-                        <div className="absolute inset-x-0 top-0 h-1 bg-blue-500"></div>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-lg font-medium text-gray-600">เป้าหมายแคลอรี่ประจำวัน</CardTitle>
                         </CardHeader>
@@ -157,7 +156,6 @@ const Dashboard = () => {
 
                     {/* Calories Consumed Card */}
                     <Card className="overflow-hidden border-none shadow-lg">
-                        <div className="absolute inset-x-0 top-0 h-1 bg-amber-500"></div>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-lg font-medium text-gray-600">แคลอรี่ที่บริโภคแล้ว</CardTitle>
                         </CardHeader>
@@ -177,7 +175,6 @@ const Dashboard = () => {
 
                     {/* Remaining Calories Card */}
                     <Card className="overflow-hidden border-none shadow-lg">
-                        <div className={`absolute inset-x-0 top-0 h-1 ${dailySummary && dailySummary.calories_difference < 0 ? 'bg-red-500' : 'bg-green-500'}`}></div>
                         <CardHeader className="pb-2">
                             <CardTitle className="text-lg font-medium text-gray-600">แคลอรี่คงเหลือ</CardTitle>
                         </CardHeader>

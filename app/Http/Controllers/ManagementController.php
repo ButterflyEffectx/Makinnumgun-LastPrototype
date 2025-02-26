@@ -43,7 +43,7 @@ class ManagementController extends Controller
             'lastPage' => $Foods->lastPage(),
             'currentPage' => $Foods->currentPage(),
             'users' => $results,
-            'totalUsers' => $totalUsers,  // ส่งจำนวน Users ทั้งหมด
+            'totalUsers' => $totalUsers,
             'totalFoods' => $totalFoods,
             'avgCalories' => $avgCalories,
 
@@ -140,7 +140,6 @@ class ManagementController extends Controller
 
         $food = food::findOrFail($id);
 
-        // เตรียมข้อมูลสำหรับ update
         $updateData = [
             'name' => $request->name,
             'catagory_id' => $request->category_id,
@@ -151,10 +150,8 @@ class ManagementController extends Controller
             'serving_size' => $request->serving_size,
         ];
 
-        // จัดการรูปภาพแยกออกมา
         try {
             if ($request->hasFile('image')) {
-                // ลบรูปเก่า
                 if ($food->image && file_exists(public_path($food->image))) {
                     unlink(public_path($food->image));
                 }
