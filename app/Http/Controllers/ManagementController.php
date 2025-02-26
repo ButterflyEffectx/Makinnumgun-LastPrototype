@@ -17,8 +17,9 @@ class ManagementController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = $request->input('search');
         $results = User::selectRaw("YEAR(created_at) as year, MONTH(created_at) as month, DAY(created_at) as day, DAYNAME(created_at) as weekday, COUNT(*) as total")
             ->groupBy('year', 'month', 'day', 'weekday')
             ->orderBy('year')
@@ -28,6 +29,13 @@ class ManagementController extends Controller
         $Foods = DB::table('foods')
             ->join('catagory', 'foods.catagory_id', '=', 'catagory.id')
             ->select('foods.*', 'catagory.name as category_name')
+            ->where(function ($q) use ($query) {
+                $q->where('foods.name', 'like', '%' . $query . '%');
+
+                if (is_numeric($query)) {
+                    $q->orWhere('foods.calories', '>=', (int) $query);
+                }
+            })
             ->orderBy('foods.id', 'desc')
             ->paginate(10);
         $categories = db::table('catagory')->get();
@@ -38,6 +46,7 @@ class ManagementController extends Controller
         $totalUsers = User::count();
         $totalFoods = DB::table('foods')->count();
         return Inertia::render('Kinraidee/Management', [
+            'query' => $query,
             'Foods' => $Foods,
             'catagorys' => $categories,
             'lastPage' => $Foods->lastPage(),

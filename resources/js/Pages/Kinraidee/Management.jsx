@@ -7,6 +7,8 @@ import EditFoodModal from './EditFoodModal';
 import { Link } from '@inertiajs/react';
 import { Inertia } from '@inertiajs/inertia';
 import Nav from '@/Components/Nav';
+import { Search } from 'lucide-react';
+import { router } from '@inertiajs/react';
 
 const DashboardCard = ({ title, value, percentage, description, color }) => {
     return (
@@ -73,7 +75,7 @@ const CardContent = React.forwardRef(({ className = '', ...props }, ref) => (
     <div ref={ref} className={`p-4 sm:p-6 pt-0 ${className}`} {...props} />
 ));
 
-const UserAnalytics = ({ users, totalUsers, totalFoods, avgCalories  }) => {
+const UserAnalytics = ({ users, totalUsers, totalFoods, avgCalories }) => {
     const [timeframe, setTimeframe] = useState('7days');
 
     const formatDate = (year, month, day) => {
@@ -221,10 +223,11 @@ const UserAnalytics = ({ users, totalUsers, totalFoods, avgCalories  }) => {
 };
 
 // Main Management Component
-const Management = ({ Foods, catagorys, currentPage, lastPage, users, totalUsers, totalFoods, avgCalories }) => {
+const Management = ({ Foods, catagorys, currentPage, lastPage, users, totalUsers, totalFoods, avgCalories, query = '' }) => {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [selectedFood, setSelectedFood] = useState(null);
+    const [search, setSearch] = useState(query);
 
     const handleAddFood = () => {
         window.location.reload();
@@ -239,24 +242,43 @@ const Management = ({ Foods, catagorys, currentPage, lastPage, users, totalUsers
         setIsEditModalOpen(true);
     };
 
+    const handleSearch = (e) => {
+        e.preventDefault();
+        router.get('management', { search });
+    };
+
     return (
         <>
-            <Nav/>
+            <Nav />
             <div className="container mx-auto px-4 sm:px-6 lg:px-8">
                 <UserAnalytics users={users}
-                totalUsers={totalUsers}
-                totalFoods={totalFoods}
-                avgCalories={avgCalories} />
+                    totalUsers={totalUsers}
+                    totalFoods={totalFoods}
+                    avgCalories={avgCalories} />
 
                 <Card className="mb-8">
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
                             <h2 className="text-lg font-semibold">Food Management</h2>
                             <div className="flex flex-wrap gap-2 items-center">
-                                <Button variant="outline" size="sm">
-                                    <Filter className="w-4 h-4 mr-1" />
-                                    Filter
-                                </Button>
+                                <form onSubmit={handleSearch} className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                        <input
+                                            type="text"
+                                            value={search}
+                                            onChange={(e) => setSearch(e.target.value)}
+                                            className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                            placeholder="Search foods..."
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                                    >
+                                        Search
+                                    </button>
+                                </form>
                                 <Button
                                     className="bg-orange-500 hover:bg-orange-600 text-white"
                                     onClick={() => setIsAddModalOpen(true)}
