@@ -13,6 +13,137 @@ const Index = ({ menuItems, categories, activeCategory = 'ทั้งหมด'
     const [isSaving, setIsSaving] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+    const showCustomAlert = (message, type = 'info') => {
+        // Remove any existing alerts first
+        const existingAlerts = document.querySelectorAll('.custom-alert-overlay');
+        existingAlerts.forEach(alert => alert.remove());
+
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-alert-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-70 z-50';
+
+        // Define icon based on alert type
+        let icon = '';
+        let colorClass = '';
+
+        switch (type) {
+            case 'success':
+                icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>`;
+                colorClass = 'border-green-500';
+                break;
+            case 'error':
+                icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>`;
+                colorClass = 'border-red-500';
+                break;
+            case 'warning':
+                icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>`;
+                colorClass = 'border-yellow-500';
+                break;
+            default: // info
+                icon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>`;
+                colorClass = 'border-blue-500';
+        }
+
+        // Create modal content
+        overlay.innerHTML = `
+            <div class="alert-container max-w-md w-11/12 bg-gray-800 rounded-xl shadow-2xl border-l-4 ${colorClass} transform transition-all duration-300 scale-95 opacity-0">
+                <div class="p-5">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            ${icon}
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <p class="text-white text-lg font-medium">${message}</p>
+                        </div>
+                    </div>
+                    <div class="mt-4 flex justify-end">
+                        <button class="close-alert px-4 py-2 bg-gray-700 text-white text-sm font-medium rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-opacity-50 transition-colors">
+                            ตกลง
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Add to DOM
+        document.body.appendChild(overlay);
+
+        // Animate in
+        setTimeout(() => {
+            const alertContainer = overlay.querySelector('.alert-container');
+            alertContainer.classList.remove('scale-95', 'opacity-0');
+            alertContainer.classList.add('scale-100', 'opacity-100');
+        }, 10);
+
+        // Add event listener to close button
+        const closeButton = overlay.querySelector('.close-alert');
+        closeButton.addEventListener('click', () => {
+            closeAlert(overlay);
+        });
+
+        // Close when clicking outside the alert
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) {
+                closeAlert(overlay);
+            }
+        });
+
+        // Auto-close after 5 seconds for success messages
+        if (type === 'success') {
+            setTimeout(() => closeAlert(overlay), 5000);
+        }
+    };
+
+    const closeAlert = (overlay) => {
+        const alertContainer = overlay.querySelector('.alert-container');
+        alertContainer.classList.remove('scale-100', 'opacity-100');
+        alertContainer.classList.add('scale-95', 'opacity-0');
+
+        setTimeout(() => {
+            overlay.remove();
+        }, 300);
+    };
+
+    // Replace all alert() calls with our custom alert
+    const originalAlert = window.alert;
+    window.alert = function(message) {
+        // Detect type of alert based on message content
+        let type = 'info';
+        if (message.toLowerCase().includes('เรียบร้อย') || message.toLowerCase().includes('สำเร็จ')) {
+            type = 'success';
+        } else if (message.toLowerCase().includes('ผิดพลาด') || message.toLowerCase().includes('กรุณา')) {
+            type = 'error';
+        }
+
+        showCustomAlert(message, type);
+    };
+
+    // Add styles
+    const style = document.createElement('style');
+    style.textContent = `
+        .custom-alert-overlay {
+            animation: fadeIn 0.3s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .alert-container {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
+        }
+    `;
+    document.head.appendChild(style);
+
     const toggleInfo = (id) => {
         setMoreInfo((prev) => ({
             ...prev,
@@ -69,7 +200,6 @@ const Index = ({ menuItems, categories, activeCategory = 'ทั้งหมด'
 
         if (!isLoggedInViaAuth && !isLoggedInViaLocalStorage) {
             alert('กรุณาเข้าสู่ระบบก่อนบันทึกรายการอาหาร');
-            window.location.href = '/login';
             return;
         }
 
@@ -102,7 +232,6 @@ const Index = ({ menuItems, categories, activeCategory = 'ทั้งหมด'
                 console.error('Save errors:', error);
                 if (error.response && error.response.status === 401) {
                     alert('กรุณาเข้าสู่ระบบก่อนบันทึกรายการอาหาร');
-                    window.location.href = '/login';
                 } else {
                     alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการบันทึกรายการอาหาร');
                 }
